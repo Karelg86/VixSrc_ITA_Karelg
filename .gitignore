@@ -1,6 +1,10 @@
 # Backup locali delle versioni precedenti (restano solo sul PC)
 backup/
 
+# Report, note di analisi e istruzioni locali
+Report_*.md
+ISTRUZIONI_*.md
+
 # Node / test
 node_modules/
 *.log
@@ -8,3 +12,7 @@ node_modules/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Screenshot locali
+Image/
+.domain-state/

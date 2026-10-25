@@ -71,11 +71,71 @@
 - Il catalogo vixsrc contiene circa 14.000 film e 5.000 serie (25/10/2026). Gli anime mancano quasi tutti (es. One Piece, Frieren, Solo Leveling). Per quelli servono i moduli anime.
 - Un titolo nel catalogo può non avere tutti gli episodi: in quel caso l'episodio non parte (stream vuoto).
 - Vixcloud può cambiare server col tempo: se un episodio torna su `vix-content.net`, valgono i rimedi del Quick-Resume di `media-player-config` (F3: qualità 720p, Duplica schermo).
-- Se vixsrc cambia dominio, aggiornare `CONFIG.VIXSRC` e gli href, ma **gli href vecchi in "Continua a guardare" smetterebbero di funzionare**. Valutare prima se il vecchio dominio fa redirect.
+- Se vixsrc cambia dominio (vedi sezione 6), i titoli già in "Continua a guardare" continuano a funzionare: `parseHref` legge solo la parte `/movie/ID` o `/tv/ID/S/E` del link e le richieste partono sempre da `CONFIG.VIXSRC`.
 
 ---
 
-## 6. TEST LOCALE
+## 6. STRUTTURA DEI FILE E ROBOT GITHUB
+
+```
+VixSrc_ITA_Karelg/
+├── main.json                       # Metadati modulo, icona, versione e URL GitHub raw
+├── extractor.js                    # Script JS eseguito da JavaScriptCore su Shirox
+├── test-module.js                  # Test runner locale (Node.js 18+): --mock offline, oppure live
+├── Quick-Resume.md                 # Questa guida tecnica
+├── .gitignore                      # Esclude backup/, Image/, report locali
+├── .gitattributes                  # Fine riga LF per js/json/md (come Mang_ITA/ENG)
+├── .github/
+│   ├── workflows/
+│   │   ├── check-domain.yml        # Robot: controlla il dominio ogni 6 ore e AVVISA (issue)
+│   │   ├── update-domain.yml       # Robot: cambio dominio su richiesta (anche da cellulare)
+│   │   └── health-check.yml        # Robot: test completo ogni giorno, AVVISA se il modulo non funziona
+│   └── scripts/
+│       ├── check-domain.js         # Logica del controllo (uguale a media-player-config)
+│       └── update-domain.js        # Sostituzione dominio + versione (tocca anche test-module.js)
+├── backup/                         # SOLO sul PC (ignorato da git): versioni precedenti
+└── Image/                          # SOLO sul PC (ignorato da git): screenshot e log
+```
+
+### 🤖 Controllo dominio (ogni 6 ore)
+- Controlla `baseUrl` di `main.json` (`https://vixsrc.to/`). Non modifica nulla.
+- Se il dominio reindirizza altrove, oppure non risponde per 2 controlli di fila, apre una **issue** con etichetta `dominio`, assegnata a te: arriva la notifica sull'app GitHub o via email.
+- Lancio manuale: *Actions → Controllo dominio → Run workflow*.
+- ⚠️ GitHub sospende i workflow programmati dopo **60 giorni senza attività** nel repo (manda una email prima). Per riattivarli: *Actions → workflow → Enable workflow*.
+
+### 🩺 Salute modulo (ogni giorno)
+- Test offline + test live con `inception` e `big bang theory` (ricerca → episodi → stream).
+- Se fallisce **2 volte di fila** apre una issue con etichetta `salute`. Le cause tipiche, scritte anche nella issue:
+  - **ricerca con 0 risultati** → chiave TMDB disattivata (sezione 4);
+  - **stream vuoto** → vixsrc ha cambiato le pagine.
+- Quando il test torna a funzionare la issue si chiude da sola.
+
+### 📱 Cambio dominio da cellulare
+1. Apri `https://github.com/Karelg86/VixSrc_ITA_Karelg/actions/workflows/update-domain.yml` (dall'app GitHub: repo → **Actions** → **Aggiorna dominio**).
+2. Premi **Run workflow**, scrivi il nuovo dominio **senza** `https://` (es. `vixsrc.nuovo`) e conferma.
+3. Il robot:
+   - sostituisce il dominio in `main.json`, `extractor.js`, `test-module.js` e `Quick-Resume.md`;
+   - incrementa la versione (es. 1.0.0 → 1.0.1);
+   - lancia i test;
+   - fa commit e push e chiude la issue.
+4. Su Shirox: Moduli → aggiorna.
+
+### 💻 Cambio dominio da PC
+```bash
+node .github/scripts/update-domain.js vixsrc.nuovo
+node test-module.js --mock
+node test-module.js "inception"
+git add main.json extractor.js test-module.js Quick-Resume.md
+git commit -m "Update domain to vixsrc.nuovo - v1.0.1"
+git push origin main
+```
+Script provati il 25/10/2026 su una copia: il controllo dà `HTTP 200, nessun cambio`; il cambio simulato `vixsrc.to → vixsrc.nuovo` aggiorna i 4 file e la versione, e i test offline passano anche dopo.
+
+> ⚠️ **Versione:** Shirox scarica il nuovo script solo se `version` in `main.json` cambia. `update-domain.js` la aumenta da solo; se modifichi i file a mano, ricordatelo. Prima di ogni modifica importante copia i file in `backup/vX.Y.Z/`.
+
+---
+
+## 7. TEST LOCALE
 ```bash
 node test-module.js --mock               # offline, 24 controlli
 node test-module.js "big bang theory"    # live: 279 episodi, 12 stagioni
@@ -84,10 +144,11 @@ node test-module.js "gomorra"            # live: solo Italiano (originale italia
 node test-module.js "inception"          # live: film
 ```
 Il test live stampa anche il **server dei segmenti** e segnala `⚠️ server lento` se è `vix-content.net`.
+Per testare una versione vecchia: `EXTRACTOR=backup/v1.0.0/extractor.js node test-module.js --mock`.
 
 ---
 
-## 7. COME AGGIORNARE / TESTARE SU SHIROX
+## 8. COME AGGIORNARE / TESTARE SU SHIROX
 1. Modificare `extractor.js`, aumentare `version` in `main.json` (Shirox aggiorna solo se la versione cambia).
 2. `node test-module.js --mock` e un test live.
 3. Commit e push su `main`.
