@@ -131,6 +131,11 @@ function embedPage(videoId) {
 <script>var other = { 'token': 'SBAGLIATO', url: 'https://pubblicita.example/after' };</script>`;
 }
 
+// Pagina embed cambiata: niente window.masterPlaylist, solo un link .m3u8 diretto
+function embedPageWithoutBlock(videoId) {
+  return `<script>var player = { source: 'https://vixsrc.to/playlist/${videoId}.m3u8?token=T${videoId}&amp;expires=1999999999' };</script>`;
+}
+
 function masterOf(languages) {
   return ["#EXTM3U",
     ...languages.map((l, i) => `#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",NAME="${l}",DEFAULT=${i === 0 ? "YES" : "NO"},LANGUAGE="${l}",URI="https://vixsrc.to/playlist/x?type=audio&rendition=${l}"`),
@@ -144,8 +149,9 @@ function masterOf(languages) {
 //   tv/10    originale italiano, audio ita+eng, stagioni 0/1/2 (ultimo ep. S2 non ancora uscito)
 //   tv/11    non presente nel catalogo vixsrc
 //   tv/25    22 stagioni da 1 episodio (serve una seconda richiesta TMDB)
-const VIDEO = { "movie/1": 500, "movie/2": 502, "tv/10/1/1": 510, "tv/25/1/1": 525 };
-const AUDIO = { 500: ["ita", "eng"], 502: ["jpn"], 510: ["ita", "eng"], 525: ["ita", "kor"] };
+//   movie/3  pagina embed senza window.masterPlaylist (riserva .m3u8)
+const VIDEO = { "movie/1": 500, "movie/2": 502, "movie/3": 503, "tv/10/1/1": 510, "tv/25/1/1": 525 };
+const AUDIO = { 500: ["ita", "eng"], 502: ["jpn"], 503: ["ita", "eng"], 510: ["ita", "eng"], 525: ["ita", "kor"] };
 
 function makeMockFetch(stats) {
   return async (url) => {
@@ -197,8 +203,8 @@ function makeMockFetch(stats) {
         return id ? json({ src: `/embed/${id}?token=e${id}&expires=1&lang=it` }) : html("<!DOCTYPE html><title>Not Found</title>", 404);
       }
       const embed = u.pathname.match(/^\/embed\/(\d+)$/);
-      if (embed) return html(embedPage(embed[1]));
-      const playlist = u.pathname.match(/^\/playlist\/(\d+)$/);
+      if (embed) return html(embed[1] === "503" ? embedPageWithoutBlock(embed[1]) : embedPage(embed[1]));
+      const playlist = u.pathname.match(/^\/playlist\/(\d+)(?:\.m3u8)?$/);
       if (playlist) return html(masterOf(AUDIO[playlist[1]] || []));
     }
     return html("", 404);
@@ -272,6 +278,11 @@ async function runMock() {
 
   s = await streamsOf("https://vixsrc.to/movie/2");
   check("solo audio giapponese: solo Originale", s && s.map((x) => x.title).join("+") === "Originale" && /Giapponese/.test(s[0].details));
+
+  s = await streamsOf("https://vixsrc.to/movie/3");
+  check("pagina embed cambiata: riserva link .m3u8",
+    s && s.map((x) => x.title).join("+") === "Italiano+Originale" &&
+    s[0].streamUrl === "https://vixsrc.to/playlist/503.m3u8?token=T503&expires=1999999999&lang=it", s && s[0].streamUrl);
 
   check("titolo non disponibile su vixsrc -> null", (await ex.extractStreamUrl("https://vixsrc.to/tv/11/1/1")) === null);
   check("href serie senza episodio -> null", (await ex.extractStreamUrl("https://vixsrc.to/tv/10")) === null);

@@ -1,6 +1,9 @@
 /**
  * Shirox / Sora / Luna Module Extractor - VixSrc ITA
- * Versione: 1.0.0
+ * Versione: 1.0.1
+ *
+ * Novità v1.0.1:
+ * - Riserva: se la pagina embed non ha più window.masterPlaylist, si usa un link .m3u8 presente nella pagina
  *
  * - Ricerca, schede e stagioni da TMDB (titoli e trame in italiano)
  * - Video da vixsrc.to: stessi file Vixcloud di StreamingCommunity, ma serviti dai server veloci
@@ -302,7 +305,10 @@ async function getMasterPlaylist(path) {
   const res = await soraFetch(`${CONFIG.VIXSRC}${api.src}`);
   if (!isOk(res)) return null;
   const html = await res.text();
+  return masterFromPlaylistBlock(html) || masterFromM3u8Link(html);
+}
 
+function masterFromPlaylistBlock(html) {
   const blockStart = html.indexOf("window.masterPlaylist");
   if (blockStart === -1) return null;
   // Il blocco non si chiude con "};": si legge fino alla fine del suo <script>
@@ -317,6 +323,13 @@ async function getMasterPlaylist(path) {
   const params = { token: tokenMatch[1], expires: expiresMatch[1] };
   if (/window\.canPlayFHD\s*=\s*(true|1)/i.test(html)) params.h = 1;
   return withParams(urlMatch[1], params);
+}
+
+// Riserva (come StreamingCommunity e AnimeUnity): se vixsrc cambia la pagina embed,
+// si prova un link .m3u8 scritto per intero
+function masterFromM3u8Link(html) {
+  const match = html.match(/(https?:\/\/[^'"\s]+\.m3u8[^'"\s]*)/);
+  return match ? decodeEntities(match[1]) : null;
 }
 
 // Tracce audio del master: [{ language: "ita", name: "Italian" }, ...]
