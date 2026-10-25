@@ -1,0 +1,10 @@
+# Backup locali delle versioni precedenti (restano solo sul PC)
+backup/
+
+# Node / test
+node_modules/
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db

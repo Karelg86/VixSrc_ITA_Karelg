@@ -1,0 +1,21 @@
+{
+  "sourceName": "VixSrc ITA",
+  "iconUrl": "https://vixsrc.to/favicon.ico",
+  "author": {
+    "name": "Karelg86",
+    "icon": "https://github.com/Karelg86.png"
+  },
+  "version": "1.0.0",
+  "language": "Italian",
+  "streamType": "HLS",
+  "quality": "1080p",
+  "baseUrl": "https://vixsrc.to/",
+  "searchBaseUrl": "https://www.themoviedb.org/search?query=%s",
+  "scriptUrl": "https://raw.githubusercontent.com/Karelg86/VixSrc_ITA_Karelg/main/extractor.js",
+  "type": "movie,tv",
+  "asyncJS": true,
+  "supportsShirox": true,
+  "supportsMojuru": true,
+  "supportsSora": true,
+  "supportsLuna": true
+}
