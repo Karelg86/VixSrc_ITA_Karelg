@@ -100,6 +100,7 @@ VixSrc_ITA_Karelg/
 ### 🤖 Controllo dominio (ogni 6 ore)
 - Controlla `baseUrl` di `main.json` (`https://vixsrc.to/`). Non modifica nulla.
 - Se il dominio reindirizza altrove, oppure non risponde per 2 controlli di fila, apre una **issue** con etichetta `dominio`, assegnata a te: arriva la notifica sull'app GitHub o via email.
+- Quando il dominio di `main.json` risponde di nuovo senza cambi (es. dominio aggiornato dal PC con push), chiude da solo le issue `dominio` rimaste aperte.
 - Lancio manuale: *Actions → Controllo dominio → Run workflow*.
 - ⚠️ GitHub sospende i workflow programmati dopo **60 giorni senza attività** nel repo (manda una email prima). Per riattivarli: *Actions → workflow → Enable workflow*.
 
