@@ -154,7 +154,7 @@ const VIDEO = { "movie/1": 500, "movie/2": 502, "movie/3": 503, "tv/10/1/1": 510
 const AUDIO = { 500: ["ita", "eng"], 502: ["jpn"], 503: ["ita", "eng"], 510: ["ita", "eng"], 525: ["ita", "kor"] };
 
 function makeMockFetch(stats) {
-  return async (url) => {
+  return async (url, options = {}) => {
     stats.requests.push(url);
     const u = new URL(url);
 
@@ -203,6 +203,8 @@ function makeMockFetch(stats) {
         return id ? json({ src: `/embed/${id}?token=e${id}&expires=1&lang=it` }) : html("<!DOCTYPE html><title>Not Found</title>", 404);
       }
       const embed = u.pathname.match(/^\/embed\/(\d+)$/);
+      // Come vixsrc dal 10/11/2026: pagina embed senza Referer -> 403
+      if (embed && !(options.headers || {}).Referer) return html("Forbidden", 403);
       if (embed) return html(embed[1] === "503" ? embedPageWithoutBlock(embed[1]) : embedPage(embed[1]));
       const playlist = u.pathname.match(/^\/playlist\/(\d+)(?:\.m3u8)?$/);
       if (playlist) return html(masterOf(AUDIO[playlist[1]] || []));

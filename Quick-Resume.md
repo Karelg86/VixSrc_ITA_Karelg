@@ -1,8 +1,8 @@
 # QUICK-RESUME: Modulo Shirox / Sora — VixSrc ITA
 
 > **Documento di ripristino contesto e guida operativa**  
-> **Versione modulo:** 1.0.1  
-> **Ultimo aggiornamento:** 25 Ottobre 2026  
+> **Versione modulo:** 1.0.2  
+> **Ultimo aggiornamento:** 10 Novembre 2026  
 > **Target:** iOS Media Player **Shirox v1.0.6 (Build 123)** (compatibile anche con Sora / Luna / Mojuru)  
 > **Repository GitHub:** [Karelg86/VixSrc_ITA_Karelg](https://github.com/Karelg86/VixSrc_ITA_Karelg)  
 > **Link da aggiungere in Shirox:** `https://raw.githubusercontent.com/Karelg86/VixSrc_ITA_Karelg/main/main.json`
@@ -31,7 +31,9 @@
 | `searchResults` | TMDB `/search/multi` (pagine 1 e 2, `it-IT`) | Mostra solo film e serie presenti nel catalogo vixsrc (`/api/list/movie/` e `/api/list/tv/`, scaricati una volta ogni 6 ore). Se il catalogo non si scarica, non filtra. |
 | `extractDetails` | TMDB `/movie/{id}` o `/tv/{id}` | Trama italiana; se manca, usa quella inglese. |
 | `extractEpisodes` | TMDB `/tv/{id}?append_to_response=season/1,...,season/20` | Una richiesta per 20 stagioni (oltre, a blocchi di 20). Esclusi la stagione 0 (speciali) e gli episodi non ancora usciti. Ordine naturale, mai ordinare per `number`. |
-| `extractStreamUrl` | `vixsrc.to/api/{movie/ID \| tv/ID/S/E}?lang=it` → `{src}` → pagina embed → `window.masterPlaylist` | Stesso formato di Vixcloud: `url`, `token`, `expires`, `h=1` se `canPlayFHD`. Se il blocco sparisce (pagina cambiata), riserva: primo link `.m3u8` scritto nella pagina (v1.0.1). Nessun header necessario, quindi in AirPlay la TV scarica direttamente. |
+| `extractStreamUrl` | `vixsrc.to/api/{movie/ID \| tv/ID/S/E}?lang=it` → `{src}` → pagina embed → `window.masterPlaylist` | Stesso formato di Vixcloud: `url`, `token`, `expires`, `h=1` se `canPlayFHD`. Se il blocco sparisce (pagina cambiata), riserva: primo link `.m3u8` scritto nella pagina (v1.0.1). La pagina embed si chiede con `Referer: https://vixsrc.to/` (v1.0.2, vedi sotto). Nessun header necessario sugli stream, quindi in AirPlay la TV scarica direttamente. |
+
+- **Referer sulla pagina embed (v1.0.2, 10/11/2026):** vixsrc ha iniziato a rispondere **403** alla pagina `/embed/ID?token=...` senza Referer (Shirox mostrava "stream non riuscito: errore di analisi"). Con `Referer: https://vixsrc.to/` risponde 200. Master `.m3u8` e playlist delle varianti rispondono 200 anche senza Referer (verificato 10/11/2026), quindi `headers` degli stream restano vuoti. Il mock ora risponde 403 all'embed senza Referer.
 
 - **href stabili** (servono a "Continua a guardare"): `https://vixsrc.to/movie/{tmdb}`, `https://vixsrc.to/tv/{tmdb}`, `https://vixsrc.to/tv/{tmdb}/{stagione}/{episodio}`. Non cambiarli.
 - Cache in RAM: dati TMDB del titolo per 10 minuti (condivisi tra scheda, episodi e stream), catalogo vixsrc per 6 ore. Shirox tiene il contesto JS del modulo finché non si cambia modulo.

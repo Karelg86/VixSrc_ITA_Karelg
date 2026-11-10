@@ -1,6 +1,9 @@
 /**
  * Shirox / Sora / Luna Module Extractor - VixSrc ITA
- * Versione: 1.0.1
+ * Versione: 1.0.2
+ *
+ * Novità v1.0.2:
+ * - Referer nella richiesta della pagina embed (dal 10/11/2026 vixsrc risponde 403 senza)
  *
  * Novità v1.0.1:
  * - Riserva: se la pagina embed non ha più window.masterPlaylist, si usa un link .m3u8 presente nella pagina
@@ -302,7 +305,8 @@ async function getMasterPlaylist(path) {
   const api = await fetchJson(`${CONFIG.VIXSRC}/api/${path}?lang=it`);
   if (!api?.src) return null;
 
-  const res = await soraFetch(`${CONFIG.VIXSRC}${api.src}`);
+  // Dal 10/11/2026 vixsrc risponde 403 alla pagina embed senza Referer
+  const res = await soraFetch(`${CONFIG.VIXSRC}${api.src}`, { headers: { Referer: `${CONFIG.VIXSRC}/` } });
   if (!isOk(res)) return null;
   const html = await res.text();
   return masterFromPlaylistBlock(html) || masterFromM3u8Link(html);
