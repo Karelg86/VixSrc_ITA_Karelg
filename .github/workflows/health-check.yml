@@ -74,7 +74,7 @@ jobs:
             echo ""
             echo "Cosa controllare:"
             echo "- **Ricerca con 0 risultati** o errore 401: la chiave TMDB è stata probabilmente disattivata. Rigenerala e aggiornala (Quick-Resume, sezione 4)."
-            echo "- **Ricerca ok ma stream vuoto**: vixsrc ha cambiato le pagine. Se il dominio non risponde, lo dice il robot **Controllo dominio**."
+            echo "- **Ricerca ok ma stream vuoto**: vixsrc ha cambiato le pagine. Le righe \`diagnosi:\` qui sotto dicono quale passaggio risponde con errore (es. 403 senza Referer il 7/11/2026). Se il dominio non risponde, lo dice il robot **Controllo dominio**."
             echo ""
             echo "Dettagli: $RUN_URL"
             echo ""

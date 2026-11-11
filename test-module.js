@@ -34,6 +34,35 @@ function check(label, condition, detail = "") {
   if (!condition) failures++;
 }
 
+// Stream vuoto: stampa il codice HTTP di ogni passaggio, così la issue del robot "Salute modulo"
+// dice subito dove si è rotto (API, pagina embed, Referer, masterPlaylist).
+async function diagnoseStream(ex, href) {
+  try {
+    const base = "https://vixsrc.to";
+    const ref = ex.parseHref(href);
+    const path = ref.type === "movie" ? `movie/${ref.id}` : `tv/${ref.id}/${ref.season}/${ref.episode}`;
+
+    const apiRes = await fetch(`${base}/api/${path}?lang=it`);
+    console.log(`   diagnosi: API /api/${path} -> HTTP ${apiRes.status}`);
+    let src = null;
+    try { src = JSON.parse(await apiRes.text()).src; } catch (error) { src = null; }
+    if (!src) {
+      console.log("   diagnosi: la risposta dell'API non contiene \"src\"");
+      return;
+    }
+
+    const plain = await fetch(`${base}${src}`);
+    console.log(`   diagnosi: pagina embed senza Referer -> HTTP ${plain.status}`);
+    const withReferer = await fetch(`${base}${src}`, { headers: { Referer: `${base}/` } });
+    const page = await withReferer.text();
+    console.log(`   diagnosi: pagina embed con Referer -> HTTP ${withReferer.status}, ` +
+      `window.masterPlaylist ${page.includes("window.masterPlaylist") ? "presente" : "ASSENTE"}, ` +
+      `link .m3u8 ${/\.m3u8/.test(page) ? "presente" : "assente"}`);
+  } catch (error) {
+    console.log(`   diagnosi: errore di rete -> ${error.message}`);
+  }
+}
+
 // ==========================================
 // TEST LIVE
 // ==========================================
@@ -69,6 +98,7 @@ async function runLive(keyword) {
   const raw = await ex.extractStreamUrl(episodes[0].href);
   const streams = raw ? JSON.parse(raw).streams || [] : [];
   check("stream", streams.length > 0, `${streams.map((s) => s.title).join(" + ") || "null"} in ${Date.now() - t0} ms`);
+  if (streams.length === 0) await diagnoseStream(ex, episodes[0].href);
 
   for (const stream of streams) {
     const master = await fetch(stream.streamUrl);

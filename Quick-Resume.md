@@ -2,8 +2,8 @@
 
 > **Documento di ripristino contesto e guida operativa**  
 > **Versione modulo:** 1.0.2  
-> **Ultimo aggiornamento:** 10 Novembre 2026  
-> **Target:** iOS Media Player **Shirox v1.0.6 (Build 123)** (compatibile anche con Sora / Luna / Mojuru)  
+> **Ultimo aggiornamento:** 11 Novembre 2026  
+> **Target:** iOS Media Player **Shirox v1.0.6 (Build 126)** (compatibile anche con Sora / Luna / Mojuru)  
 > **Repository GitHub:** [Karelg86/VixSrc_ITA_Karelg](https://github.com/Karelg86/VixSrc_ITA_Karelg)  
 > **Link da aggiungere in Shirox:** `https://raw.githubusercontent.com/Karelg86/VixSrc_ITA_Karelg/main/main.json`
 
@@ -112,6 +112,8 @@ VixSrc_ITA_Karelg/
   - **ricerca con 0 risultati** → chiave TMDB disattivata (sezione 4);
   - **stream vuoto** → vixsrc ha cambiato le pagine.
 - Quando il test torna a funzionare la issue si chiude da sola.
+- Se lo stream è vuoto, il test stampa righe `diagnosi:` con il codice HTTP di API e pagina embed (con e senza Referer): finiscono nella issue.
+- Guasto del 7/11/2026 (403 senza Referer): il robot è diventato rosso il 7/11 e ha aperto la issue #1 l'8/11. La notifica arriva solo se le notifiche GitHub (app o email) sono attive.
 
 ### 📱 Cambio dominio da cellulare
 1. Apri `https://github.com/Karelg86/VixSrc_ITA_Karelg/actions/workflows/update-domain.yml` (dall'app GitHub: repo → **Actions** → **Aggiorna dominio**).
